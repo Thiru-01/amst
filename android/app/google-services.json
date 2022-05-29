@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "546317992522",
+    "project_id": "amst-88009",
+    "storage_bucket": "amst-88009.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:546317992522:android:fd0501f05958f8bc26dcb3",
+        "android_client_info": {
+          "package_name": "com.example.amst"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "546317992522-5ge4gu1vh6ptupavc35ttifmjibf0h8e.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCKuwT-sDic8j74TfIbRg3TZdfb0gTtt70"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "546317992522-5ge4gu1vh6ptupavc35ttifmjibf0h8e.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
