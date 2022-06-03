@@ -101,10 +101,12 @@ AppBar homeAppBar(GlobalKey<ScaffoldState> scaKey, User? user) {
           imageUrl: user!.photoURL!,
           imageBuilder: ((context, imageProvider) {
             return Padding(
-              padding: const EdgeInsets.all(5.0),
+              padding: const EdgeInsets.all(12.0),
               child: CircleAvatar(
+                radius: 20,
                 backgroundColor: primarySwatch,
                 child: CircleAvatar(
+                  radius: 15,
                   backgroundImage: imageProvider,
                 ),
               ),

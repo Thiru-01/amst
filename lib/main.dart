@@ -13,8 +13,9 @@ import 'package:google_fonts/google_fonts.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
+NotificatinDefiner notifi = NotificatinDefiner();
 FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
-void makeConfig(NotificatinDefiner notifi) async {
+void makeConfig() async {
   firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
   FirebaseMessaging.onMessage.listen((event) {
@@ -22,8 +23,7 @@ void makeConfig(NotificatinDefiner notifi) async {
   });
 }
 
-Future<void> _registerBackgroundNotification(
-    RemoteMessage message, NotificatinDefiner notifi) async {
+Future<void> _registerBackgroundNotification(RemoteMessage message) async {
   await Firebase.initializeApp();
   notifi.showNotification(message);
 }
@@ -31,10 +31,8 @@ Future<void> _registerBackgroundNotification(
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  NotificatinDefiner definer = NotificatinDefiner();
-  FirebaseMessaging.onBackgroundMessage(
-      (message) => _registerBackgroundNotification(message, definer));
-  makeConfig(definer);
+  FirebaseMessaging.onBackgroundMessage(_registerBackgroundNotification);
+  makeConfig();
   runApp(const MyApp());
 }
 

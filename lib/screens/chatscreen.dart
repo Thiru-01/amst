@@ -19,7 +19,7 @@ class ChatScreen extends StatefulWidget {
 }
 
 class _ChatScreenState extends State<ChatScreen> {
-  ChatController chatController = Get.put(ChatController());
+  ChatController chatController = Get.find();
   TextEditingController textEditingController = TextEditingController();
   ScrollController scrollController = ScrollController();
   int _limit = 20;

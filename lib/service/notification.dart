@@ -1,3 +1,4 @@
+import 'package:amst/constant.dart';
 import 'package:amst/main.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
@@ -16,6 +17,7 @@ class NotificatinDefiner {
       channel.name,
       playSound: true,
       enableVibration: true,
+      color: primarySwatch,
       importance: Importance.high,
       priority: Priority.high,
     );
@@ -23,7 +25,7 @@ class NotificatinDefiner {
       android: androidPlatformChannelSpecifics,
     );
     var initializationSettingsAndroid =
-        const AndroidInitializationSettings('my_icon');
+        const AndroidInitializationSettings('@mipmap/launcher_icon');
 
     var initializationSettings =
         InitializationSettings(android: initializationSettingsAndroid);

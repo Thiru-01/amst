@@ -37,6 +37,16 @@ class ChatController extends GetxController {
         .snapshots();
   }
 
+  Stream<QuerySnapshot<Map<String, dynamic>>> getLastChat(String grpId) {
+    return firebaseFirestore
+        .collection('message')
+        .doc(grpId)
+        .collection(grpId)
+        .orderBy('timestamp', descending: true)
+        .limit(1)
+        .snapshots();
+  }
+
   void sendMessage(String text, String grpId, String peerId, String currentId) {
     String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
     DocumentReference documentReference = firebaseFirestore

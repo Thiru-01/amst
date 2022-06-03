@@ -1,7 +1,9 @@
 import 'package:amst/components/components.dart';
 import 'package:amst/constant.dart';
+import 'package:amst/model/messagemodel.dart';
 import 'package:amst/model/usermodel.dart';
 import 'package:amst/screens/chatscreen.dart';
+import 'package:amst/service/chat.dart';
 import 'package:amst/service/login.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,7 +18,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    printInfo(info: "Thiur");
+    ChatController chatController = Get.put(ChatController());
     final GoogleLogin googleLogin = Get.put(GoogleLogin());
     GlobalKey<ScaffoldState> scaKey = GlobalKey();
     return Scaffold(
@@ -37,6 +39,8 @@ class HomeScreen extends StatelessWidget {
                         UserModel model = userModelFromJson(
                             snapshot.data!.docs[index].data()
                                 as Map<String, dynamic>);
+                        String grpId =
+                            chatController.getGrpId(user!.uid, model.id);
                         return Column(
                           children: [
                             ListTile(
@@ -60,12 +64,30 @@ class HomeScreen extends StatelessWidget {
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
                               ),
-                              subtitle: AutoSizeText(
-                                model.email,
-                                style: const TextStyle(
-                                  color: Colors.black12,
-                                ),
-                              ),
+                              subtitle: StreamBuilder<QuerySnapshot>(
+                                  stream: chatController.getLastChat(grpId),
+                                  builder: (context, snapshot) {
+                                    if (snapshot.hasData) {
+                                      if (snapshot.data!.docs.isNotEmpty) {
+                                        MessageModel model =
+                                            messageModelFromJson(
+                                                snapshot.data!.docs[0].data()
+                                                    as Map<String, dynamic>);
+                                        return AutoSizeText(
+                                          model.content,
+                                          style: const TextStyle(
+                                            color: Colors.black12,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                    return const AutoSizeText(
+                                      '',
+                                      style: TextStyle(
+                                        color: Colors.black12,
+                                      ),
+                                    );
+                                  }),
                             ),
                             const Divider()
                           ],
