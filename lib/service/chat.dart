@@ -54,4 +54,11 @@ class ChatController extends GetxController {
       transaction.set(documentReference, messageModel.toJson());
     });
   }
+
+  void updateChatter(String uID, String peerId) {
+    firebaseFirestore
+        .collection('users')
+        .doc(uID)
+        .update({"chattingWith": peerId});
+  }
 }

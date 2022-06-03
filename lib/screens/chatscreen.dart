@@ -28,6 +28,7 @@ class _ChatScreenState extends State<ChatScreen> {
   String groupId = '';
   @override
   void initState() {
+    chatController.updateChatter(widget.currentUID, widget.model.id);
     groupId = chatController.getGrpId(widget.currentUID, widget.model.id);
     scrollController.addListener(_scrollListener);
     super.initState();
@@ -62,7 +63,8 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: chatAppBar(context, widget.model),
+      appBar:
+          chatAppBar(context, widget.model, widget.currentUID, chatController),
       body: WillPopScope(
           onWillPop: willPop(),
           child: Stack(

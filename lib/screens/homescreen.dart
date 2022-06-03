@@ -16,6 +16,7 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    printInfo(info: "Thiur");
     final GoogleLogin googleLogin = Get.put(GoogleLogin());
     GlobalKey<ScaffoldState> scaKey = GlobalKey();
     return Scaffold(
@@ -39,8 +40,10 @@ class HomeScreen extends StatelessWidget {
                         return Column(
                           children: [
                             ListTile(
-                              onTap: () => Get.to(() => ChatScreen(
-                                  currentUID: user!.uid, model: model)),
+                              onTap: () {
+                                Get.to(() => ChatScreen(
+                                    currentUID: user!.uid, model: model));
+                              },
                               leading: SizedBox(
                                 height: 50,
                                 width: 50,

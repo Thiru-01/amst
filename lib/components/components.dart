@@ -1,6 +1,7 @@
 import 'package:amst/constant.dart';
 import 'package:amst/model/messagemodel.dart';
 import 'package:amst/model/usermodel.dart';
+import 'package:amst/service/chat.dart';
 import 'package:amst/service/login.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -69,7 +70,7 @@ Drawer homeDrawer(GoogleLogin googleLogin, User? user) {
             child: Align(
               alignment: Alignment.bottomRight,
               child: OutlinedButton(
-                child: const Text("Sing Out"),
+                child: const Text("Sign Out"),
                 onPressed: () => googleLogin.googleSingOut(),
               ),
             ),
@@ -117,7 +118,8 @@ AppBar homeAppBar(GlobalKey<ScaffoldState> scaKey, User? user) {
   );
 }
 
-AppBar chatAppBar(BuildContext context, UserModel model) {
+AppBar chatAppBar(BuildContext context, UserModel model, String uID,
+    ChatController controller) {
   return AppBar(
     backgroundColor: primarySwatch.shade50,
     elevation: 0,
@@ -126,7 +128,10 @@ AppBar chatAppBar(BuildContext context, UserModel model) {
         FontAwesomeIcons.arrowLeft,
         color: primarySwatch,
       ),
-      onPressed: () => Get.back(),
+      onPressed: () {
+        controller.updateChatter(uID, "");
+        Get.back();
+      },
     ),
     title: Row(
       children: [

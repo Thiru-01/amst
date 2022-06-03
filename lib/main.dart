@@ -1,16 +1,40 @@
 import 'package:amst/constant.dart';
 import 'package:amst/screens/homescreen.dart';
 import 'package:amst/screens/singupscreen.dart';
+import 'package:amst/service/notification.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
+    FlutterLocalNotificationsPlugin();
+FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+void makeConfig(NotificatinDefiner notifi) async {
+  firebaseMessaging.setForegroundNotificationPresentationOptions(
+      alert: true, badge: true, sound: true);
+  FirebaseMessaging.onMessage.listen((event) {
+    notifi.showNotification(event);
+  });
+}
+
+Future<void> _registerBackgroundNotification(
+    RemoteMessage message, NotificatinDefiner notifi) async {
+  await Firebase.initializeApp();
+  notifi.showNotification(message);
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
+  NotificatinDefiner definer = NotificatinDefiner();
+  FirebaseMessaging.onBackgroundMessage(
+      (message) => _registerBackgroundNotification(message, definer));
+  makeConfig(definer);
   runApp(const MyApp());
 }
 

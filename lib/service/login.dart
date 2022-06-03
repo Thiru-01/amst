@@ -1,3 +1,4 @@
+import 'package:amst/main.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -19,6 +20,7 @@ class GoogleLogin {
     }
     currentUser = googleUser;
     final googleAuth = await googleUser.authentication;
+    final String? messToken = await firebaseMessaging.getToken();
     final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken, idToken: googleAuth.idToken);
     final User? user =
@@ -34,7 +36,9 @@ class GoogleLogin {
           'nickname': user.displayName,
           'photoUrl': user.photoURL,
           'id': user.uid,
-          "email": user.email
+          "email": user.email,
+          "messageToken": messToken!,
+          "chattingWith": ''
         });
       }
     }
