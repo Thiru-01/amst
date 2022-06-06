@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+const pushMessageKey =
+    "AAAAfzMXAko:APA91bEzMafSh-vzh1zRO5x0owcH1l4OKJQvX5xgbe-4lMacBk_gxO-QMSWcIZuIXrVYIQvi50_jBZYpYzsdtutlSUx1jKMap9KiiwWmfFGyppvavjIb3ICeZUpKcrNlMrkSlT5en_s0";
+final RegExp regexEmoji = RegExp(
+    r'(\u00a9|\u00ae|[\u2000-\u3300]|\ud83c[\ud000-\udfff]|\ud83d[\ud000-\udfff]|\ud83e[\ud000-\udfff])');
 const MaterialColor primarySwatch = MaterialColor(
   _bluePrimaryValue,
   <int, Color>{

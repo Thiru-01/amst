@@ -1,3 +1,5 @@
+// ignore_for_file: must_be_immutable
+
 import 'package:amst/components/components.dart';
 import 'package:amst/constant.dart';
 import 'package:amst/model/messagemodel.dart';
@@ -12,13 +14,34 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class HomeScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
   final User? user;
-  const HomeScreen({super.key, this.user});
+  HomeScreen({super.key, this.user});
+  ChatController chatController = Get.put(ChatController());
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        printInfo(info: "Resumed");
+        break;
+
+      case AppLifecycleState.paused:
+        printInfo(info: "Pasued");
+        break;
+      case AppLifecycleState.inactive:
+        printInfo(info: "Inactive");
+        break;
+      case AppLifecycleState.detached:
+        chatController.updateChatter(user!.uid, "");
+        printInfo(info: "App Detached");
+        break;
+    }
+    super.didChangeAppLifecycleState(state);
+  }
 
   @override
   Widget build(BuildContext context) {
-    ChatController chatController = Get.put(ChatController());
     final GoogleLogin googleLogin = Get.put(GoogleLogin());
     GlobalKey<ScaffoldState> scaKey = GlobalKey();
     return Scaffold(
@@ -28,38 +51,46 @@ class HomeScreen extends StatelessWidget {
       body: SizedBox(
         height: height(context),
         child: StreamBuilder<QuerySnapshot>(
-            stream: FirebaseFirestore.instance.collection("users").snapshots(),
+            stream: FirebaseFirestore.instance
+                .collection("users")
+                .orderBy("lastTime", descending: true)
+                .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return ListView.builder(
-                    itemCount: snapshot.data!.docs.length,
-                    itemBuilder: (context, index) {
+                return AnimatedList(
+                    initialItemCount: snapshot.data!.docs.length,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index, animation) {
                       String uId = snapshot.data!.docs[index].id;
                       if (uId != user!.uid) {
-                        UserModel model = userModelFromJson(
-                            snapshot.data!.docs[index].data()
-                                as Map<String, dynamic>);
+                        Rx<UserModel> model = userModelFromJson(
+                                snapshot.data!.docs[index].data()
+                                    as Map<String, dynamic>)
+                            .obs;
+
                         String grpId =
-                            chatController.getGrpId(user!.uid, model.id);
+                            chatController.getGrpId(user!.uid, model.value.id);
                         return Column(
                           children: [
                             ListTile(
                               onTap: () {
-                                Get.to(() => ChatScreen(
-                                    currentUID: user!.uid, model: model));
+                                chatController.updateChatter(
+                                    user!.uid, model.value.id);
+                                Get.to(() =>
+                                    ChatScreen(currentUID: user, model: model));
                               },
                               leading: SizedBox(
                                 height: 50,
                                 width: 50,
                                 child: ClipOval(
                                   child: CachedNetworkImage(
-                                    imageUrl: model.photoUrl,
+                                    imageUrl: model.value.photoUrl,
                                     fadeInDuration: const Duration(),
                                   ),
                                 ),
                               ),
                               title: AutoSizeText(
-                                model.nickname,
+                                model.value.nickname,
                                 style: const TextStyle(
                                     color: Colors.black,
                                     fontWeight: FontWeight.bold),
@@ -81,9 +112,9 @@ class HomeScreen extends StatelessWidget {
                                         );
                                       }
                                     }
-                                    return const AutoSizeText(
-                                      '',
-                                      style: TextStyle(
+                                    return AutoSizeText(
+                                      model.value.email,
+                                      style: const TextStyle(
                                         color: Colors.black12,
                                       ),
                                     );
@@ -93,7 +124,7 @@ class HomeScreen extends StatelessWidget {
                           ],
                         );
                       }
-                      return const SizedBox();
+                      return const SizedBox.shrink();
                     });
               } else {
                 return const Center(

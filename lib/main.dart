@@ -15,7 +15,9 @@ final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
 NotificatinDefiner notifi = NotificatinDefiner();
 FirebaseMessaging firebaseMessaging = FirebaseMessaging.instance;
+
 void makeConfig() async {
+  firebaseMessaging.onTokenRefresh.listen((event) {});
   firebaseMessaging.setForegroundNotificationPresentationOptions(
       alert: true, badge: true, sound: true);
   FirebaseMessaging.onMessage.listen((event) {

@@ -6,6 +6,7 @@ import 'package:amst/service/login.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:dart_emoji/dart_emoji.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -13,6 +14,7 @@ import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 
 Drawer homeDrawer(GoogleLogin googleLogin, User? user) {
+  ChatController chatController = Get.find();
   return Drawer(
       backgroundColor: primarySwatch.shade100,
       child: Column(
@@ -71,7 +73,10 @@ Drawer homeDrawer(GoogleLogin googleLogin, User? user) {
               alignment: Alignment.bottomRight,
               child: OutlinedButton(
                 child: const Text("Sign Out"),
-                onPressed: () => googleLogin.googleSingOut(),
+                onPressed: () {
+                  chatController.updateChatter(user.uid, "");
+                  googleLogin.googleSingOut();
+                },
               ),
             ),
           )),
@@ -187,95 +192,128 @@ bool isLastMessageRight(
 }
 
 Widget buildItem(int index, DocumentSnapshot snapshot, String currentId,
-    List<QueryDocumentSnapshot> messageList) {
+    List<QueryDocumentSnapshot> messageList, BuildContext context) {
   if (!snapshot.isBlank!) {
     MessageModel messageModel =
         messageModelFromJson(snapshot.data() as Map<String, dynamic>);
     if (messageModel.idFrom == currentId) {
       return Row(
         mainAxisAlignment: MainAxisAlignment.end,
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
-            width: 200,
-            decoration: BoxDecoration(
-                color: primarySwatch.shade200,
-                borderRadius: BorderRadius.circular(8)),
-            margin: EdgeInsets.only(
-                bottom:
-                    isLastMessageRight(index, messageList, currentId) ? 20 : 10,
-                right: 10),
-            child: Column(
-              children: [
-                AutoSizeText(
-                  messageModel.content,
-                  style: const TextStyle(color: primarySwatch),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      DateTime.fromMillisecondsSinceEpoch(
-                                      int.parse(messageModel.timestamp))
-                                  .day ==
-                              DateTime.now().day
-                          ? DateFormat('hh:mm aa').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(messageModel.timestamp)))
-                          : DateFormat('dd MMM kk:mm').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(messageModel.timestamp))),
-                      style: const TextStyle(fontSize: 6, color: primarySwatch),
-                    )
-                  ],
+          EmojiUtil.hasOnlyEmojis(messageModel.content)
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
+                  child: SizedBox(
+                    width: messageModel.content.length == 2
+                        ? 100
+                        : MediaQuery.of(context).size.width - 90,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        AutoSizeText(
+                          messageModel.content,
+                          maxFontSize: 38,
+                          minFontSize: 34,
+                        ),
+                        showSenderTime(messageModel)
+                      ],
+                    ),
+                  ),
                 )
-              ],
-            ),
+              : Container(
+                  padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
+                  constraints: BoxConstraints(
+                      minWidth: 80,
+                      maxWidth: MediaQuery.of(context).size.width - 140),
+                  decoration: BoxDecoration(
+                      color: primarySwatch.shade200,
+                      borderRadius: BorderRadius.circular(8)),
+                  margin: EdgeInsets.only(
+                      bottom: isLastMessageRight(index, messageList, currentId)
+                          ? 20
+                          : 10,
+                      right: 10),
+                  child: AutoSizeText(
+                    messageModel.content,
+                    textAlign: TextAlign.left,
+                    style: const TextStyle(color: primarySwatch),
+                  ),
+                ),
+          Padding(
+            padding: const EdgeInsets.only(right: 5),
+            child: showSenderTime(messageModel),
           )
         ],
       );
     } else {
       return Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-            padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
-            width: 200,
-            decoration: BoxDecoration(
-                color: primarySwatch.shade700,
-                borderRadius: BorderRadius.circular(8)),
-            margin: const EdgeInsets.only(left: 10, bottom: 10),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AutoSizeText(
-                  messageModel.content,
-                  style: TextStyle(color: primarySwatch.shade50),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
+          Padding(
+            padding: const EdgeInsets.only(left: 5),
+            child: Text(
+              DateTime.fromMillisecondsSinceEpoch(
+                              int.parse(messageModel.timestamp))
+                          .day ==
+                      DateTime.now().day
+                  ? DateFormat('hh:mm aa').format(
                       DateTime.fromMillisecondsSinceEpoch(
-                                      int.parse(messageModel.timestamp))
-                                  .day ==
-                              DateTime.now().day
-                          ? DateFormat('hh:mm aa').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(messageModel.timestamp)))
-                          : DateFormat('dd MMM kk:mm').format(
-                              DateTime.fromMillisecondsSinceEpoch(
-                                  int.parse(messageModel.timestamp))),
-                      style:
-                          TextStyle(fontSize: 6, color: primarySwatch.shade50),
-                    )
-                  ],
-                )
-              ],
+                          int.parse(messageModel.timestamp)))
+                  : DateFormat('dd MMM kk:mm').format(
+                      DateTime.fromMillisecondsSinceEpoch(
+                          int.parse(messageModel.timestamp))),
+              style: const TextStyle(fontSize: 6, color: primarySwatch),
             ),
-          )
+          ),
+          EmojiUtil.hasOnlyEmojis(messageModel.content)
+              ? Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 8, 15, 8),
+                  child: SizedBox(
+                    width: messageModel.content.length == 2
+                        ? 100
+                        : MediaQuery.of(context).size.width - 90,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        AutoSizeText(
+                          messageModel.content,
+                          maxFontSize: 38,
+                          minFontSize: 34,
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : Container(
+                  padding: const EdgeInsets.fromLTRB(15, 8, 15, 8),
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width - 140),
+                  decoration: BoxDecoration(
+                      color: primarySwatch.shade700,
+                      borderRadius: BorderRadius.circular(8)),
+                  margin: const EdgeInsets.only(left: 10, bottom: 10),
+                  child: AutoSizeText(
+                    messageModel.content,
+                    style: TextStyle(color: primarySwatch.shade50),
+                  ),
+                ),
         ],
       );
     }
   }
   return const SizedBox.shrink();
+}
+
+Text showSenderTime(MessageModel messageModel) {
+  return Text(
+    DateTime.fromMillisecondsSinceEpoch(int.parse(messageModel.timestamp))
+                .day ==
+            DateTime.now().day
+        ? DateFormat('hh:mm aa').format(DateTime.fromMillisecondsSinceEpoch(
+            int.parse(messageModel.timestamp)))
+        : DateFormat('dd MMM kk:mm').format(DateTime.fromMillisecondsSinceEpoch(
+            int.parse(messageModel.timestamp))),
+    style: const TextStyle(fontSize: 6, color: primarySwatch),
+  );
 }

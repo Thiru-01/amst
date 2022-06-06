@@ -4,21 +4,22 @@ import 'package:amst/model/usermodel.dart';
 import 'package:amst/service/chat.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 
 class ChatScreen extends StatefulWidget {
-  final String currentUID;
-  final UserModel model;
+  final User? currentUID;
+  final Rx<UserModel> model;
   const ChatScreen({super.key, required this.currentUID, required this.model});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
 }
 
-class _ChatScreenState extends State<ChatScreen> {
+class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   ChatController chatController = Get.find();
   TextEditingController textEditingController = TextEditingController();
   ScrollController scrollController = ScrollController();
@@ -28,10 +29,41 @@ class _ChatScreenState extends State<ChatScreen> {
   String groupId = '';
   @override
   void initState() {
-    chatController.updateChatter(widget.currentUID, widget.model.id);
-    groupId = chatController.getGrpId(widget.currentUID, widget.model.id);
+    WidgetsBinding.instance.addObserver(this);
+    groupId =
+        chatController.getGrpId(widget.currentUID!.uid, widget.model.value.id);
     scrollController.addListener(_scrollListener);
     super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        printInfo(info: "Resumed");
+        chatController.updateChatter(
+            widget.currentUID!.uid, widget.model.value.id);
+        break;
+
+      case AppLifecycleState.paused:
+        printInfo(info: "Pasued");
+        chatController.updateChatter(widget.currentUID!.uid, "");
+        break;
+      case AppLifecycleState.inactive:
+        printInfo(info: "Inactive");
+        break;
+      case AppLifecycleState.detached:
+        printInfo(info: "App Detached");
+        break;
+    }
+    super.didChangeAppLifecycleState(state);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.addObserver(this);
+    super.dispose();
+    chatController.updateChatter(widget.currentUID!.uid, "");
   }
 
   _scrollListener() {
@@ -47,8 +79,8 @@ class _ChatScreenState extends State<ChatScreen> {
   void onSendMessage(String content) {
     if (content.trim().isNotEmpty) {
       textEditingController.clear();
-      chatController.sendMessage(
-          content, groupId, widget.model.id, widget.currentUID);
+      chatController.sendMessage(content, groupId, widget.model.value.id,
+          widget.currentUID!.uid, widget.model.value, widget.currentUID);
       scrollController.animateTo(0,
           duration: const Duration(milliseconds: 300), curve: Curves.easeOut);
     } else {
@@ -63,8 +95,8 @@ class _ChatScreenState extends State<ChatScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          chatAppBar(context, widget.model, widget.currentUID, chatController),
+      appBar: chatAppBar(
+          context, widget.model.value, widget.currentUID!.uid, chatController),
       body: WillPopScope(
           onWillPop: willPop(),
           child: Stack(
@@ -92,6 +124,8 @@ class _ChatScreenState extends State<ChatScreen> {
                               child: SizedBox(
                             child: TextField(
                               controller: textEditingController,
+                              enableSuggestions: true,
+                              textCapitalization: TextCapitalization.sentences,
                               decoration: const InputDecoration(
                                 contentPadding: EdgeInsets.only(
                                     left: 15, right: 15, top: 5, bottom: 5),
@@ -138,7 +172,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
                           return buildItem(index, snapshot.data!.docs[index],
-                              widget.currentUID, messagelist);
+                              widget.currentUID!.uid, messagelist, context);
                         },
                       );
                     } else {

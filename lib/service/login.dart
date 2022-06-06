@@ -38,7 +38,8 @@ class GoogleLogin {
           'id': user.uid,
           "email": user.email,
           "messageToken": messToken!,
-          "chattingWith": ''
+          "chattingWith": '',
+          "lastTime": '0'
         });
       }
     }

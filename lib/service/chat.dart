@@ -1,4 +1,10 @@
+import 'dart:convert';
+
+import 'package:amst/constant.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:http/http.dart' as http;
 import 'package:amst/model/messagemodel.dart';
+import 'package:amst/model/usermodel.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
@@ -47,8 +53,10 @@ class ChatController extends GetxController {
         .snapshots();
   }
 
-  void sendMessage(String text, String grpId, String peerId, String currentId) {
+  void sendMessage(String text, String grpId, String peerId, String currentId,
+      UserModel model, User? user) {
     String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
+    updateTimeStamp(user!.uid);
     DocumentReference documentReference = firebaseFirestore
         .collection("message")
         .doc(grpId)
@@ -62,7 +70,49 @@ class ChatController extends GetxController {
         type: "text");
     firebaseFirestore.runTransaction((transaction) async {
       transaction.set(documentReference, messageModel.toJson());
+    }).whenComplete(() async {
+      try {
+        UserModel? peer;
+        QuerySnapshot rawData =
+            await FirebaseFirestore.instance.collection("users").get();
+        for (var element in rawData.docs) {
+          UserModel model =
+              userModelFromJson(element.data() as Map<String, dynamic>);
+          if (model.id == peerId) {
+            peer = model;
+          }
+        }
+        printInfo(info: "peer curr: $currentId");
+        printInfo(info: "Peer: ${peer!.chattingWith}");
+        if (currentId != peer.chattingWith) {
+          await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Authorization': 'key=$pushMessageKey',
+              },
+              body: jsonEncode(
+                <String, dynamic>{
+                  "to": model.messageToken,
+                  'notification': <String, dynamic>{
+                    'body': '${user.displayName}: $text',
+                    'title': "AmSt",
+                  },
+                },
+              ));
+        }
+      } catch (e) {
+        printInfo(info: e.toString());
+      }
     });
+  }
+
+  void updateTimeStamp(
+    String uid,
+  ) {
+    firebaseFirestore
+        .collection('users')
+        .doc(uid)
+        .update({"lastTime": DateTime.now().microsecondsSinceEpoch});
   }
 
   void updateChatter(String uID, String peerId) {
