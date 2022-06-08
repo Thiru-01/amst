@@ -39,7 +39,8 @@ class GoogleLogin {
           "email": user.email,
           "messageToken": messToken!,
           "chattingWith": '',
-          "lastTime": '0'
+          "lastTime": '0',
+          'about': ''
         });
       }
     }

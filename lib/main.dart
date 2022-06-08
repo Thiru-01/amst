@@ -1,8 +1,12 @@
 import 'package:amst/constant.dart';
+import 'package:amst/model/usermodel.dart';
+import 'package:amst/screens/aboutandprofile.dart';
 import 'package:amst/screens/homescreen.dart';
 import 'package:amst/screens/singupscreen.dart';
+import 'package:amst/service/chat.dart';
 import 'package:amst/service/notification.dart';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
@@ -73,8 +77,36 @@ class MyApp extends StatelessWidget {
               return SingUpScreen();
             }
             if (snapshot.hasData) {
-              return HomeScreen(
-                user: snapshot.data,
+              ChatController controller = Get.put(ChatController());
+              return FutureBuilder<DocumentSnapshot>(
+                future: controller.getUser(snapshot.data!.uid),
+                builder: (context, snapshot2) {
+                  if (snapshot2.connectionState == ConnectionState.waiting) {
+                    return const Scaffold(
+                        body: Center(child: CircularProgressIndicator()));
+                  }
+                  if (snapshot2.hasData) {
+                    UserModel userModel = userModelFromJson(
+                        snapshot2.data!.data() as Map<String, dynamic>);
+                    if (userModel.about.isEmpty) {
+                      return InfoPage(user: snapshot.data);
+                    }
+                    return HomeScreen(
+                      user: snapshot.data,
+                    );
+                  }
+                  return const Scaffold(
+                    body: Center(
+                      child: AutoSizeText(
+                        "Something went wrong please \ntry again later !",
+                        maxFontSize: 22,
+                        textAlign: TextAlign.center,
+                        minFontSize: 19,
+                        style: TextStyle(color: primarySwatch),
+                      ),
+                    ),
+                  );
+                },
               );
             }
             return Scaffold(

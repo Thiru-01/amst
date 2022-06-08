@@ -28,3 +28,27 @@ double height(context) {
 double width(context) {
   return MediaQuery.of(context).size.width;
 }
+
+showLoaderDialog(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    backgroundColor: primarySwatch.shade100,
+    content: Row(
+      children: [
+        const CircularProgressIndicator(),
+        Container(
+            margin: const EdgeInsets.only(left: 7),
+            child: const Text(
+              "Creating user !!!",
+              style: TextStyle(color: primarySwatch),
+            )),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}

@@ -1,7 +1,9 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:amst/constant.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:amst/model/messagemodel.dart';
 import 'package:amst/model/usermodel.dart';
@@ -14,7 +16,7 @@ willPop() {}
 class ChatController extends GetxController {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
-
+  RxString imgaePath = ''.obs;
   Future updateFirestore(
       {required String collectionPath,
       required String docs,
@@ -63,11 +65,12 @@ class ChatController extends GetxController {
         .collection(grpId)
         .doc(timeStamp);
     MessageModel messageModel = MessageModel(
-        idFrom: currentId,
-        idTo: peerId,
-        timestamp: timeStamp,
-        content: text,
-        type: "text");
+      idFrom: currentId,
+      idTo: peerId,
+      timestamp: timeStamp,
+      content: text,
+      type: "text",
+    );
     firebaseFirestore.runTransaction((transaction) async {
       transaction.set(documentReference, messageModel.toJson());
     }).whenComplete(() async {
@@ -120,5 +123,82 @@ class ChatController extends GetxController {
         .collection('users')
         .doc(uID)
         .update({"chattingWith": peerId});
+  }
+
+  Future<DocumentSnapshot> getUser(String id) async {
+    return await firebaseFirestore.collection('users').doc(id).get();
+  }
+
+  void updateAbout(String id, String about) {
+    firebaseFirestore.collection('users').doc(id).update({"about": about});
+  }
+
+  Future<void> uploadImage(
+      String path, String id, String about, context) async {
+    updateAbout(id, about);
+    var task = await firebaseStorage.ref("dp/").putFile(File(path));
+    firebaseFirestore
+        .collection('users')
+        .doc(id)
+        .update({"photoUrl": await task.ref.getDownloadURL()});
+    Navigator.pop(context);
+  }
+
+  void sendImage(
+      {required User? user,
+      required String grpId,
+      required String peerId,
+      required String path,
+      required UserModel model}) async {
+    var task = await firebaseStorage.ref("$grpId/").putFile(File(path));
+    String pathS = await task.ref.getDownloadURL();
+    String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
+    updateTimeStamp(user!.uid);
+    DocumentReference documentReference = firebaseFirestore
+        .collection("message")
+        .doc(grpId)
+        .collection(grpId)
+        .doc(timeStamp);
+    MessageModel messageModel = MessageModel(
+      idFrom: user.uid,
+      idTo: peerId,
+      timestamp: timeStamp,
+      content: pathS,
+      type: "image",
+    );
+    firebaseFirestore.runTransaction((transaction) async {
+      transaction.set(documentReference, messageModel.toJson());
+    }).whenComplete(() async {
+      try {
+        UserModel? peer;
+        QuerySnapshot rawData =
+            await FirebaseFirestore.instance.collection("users").get();
+        for (var element in rawData.docs) {
+          UserModel model =
+              userModelFromJson(element.data() as Map<String, dynamic>);
+          if (model.id == peerId) {
+            peer = model;
+          }
+        }
+        if (user.uid != peer!.chattingWith) {
+          await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+              headers: <String, String>{
+                'Content-Type': 'application/json; charset=UTF-8',
+                'Authorization': 'key=$pushMessageKey',
+              },
+              body: jsonEncode(
+                <String, dynamic>{
+                  "to": model.messageToken,
+                  'notification': <String, dynamic>{
+                    'body': '${user.displayName}: Photo 📷',
+                    'title': "AmSt",
+                  },
+                },
+              ));
+        }
+      } catch (e) {
+        printInfo(info: e.toString());
+      }
+    });
   }
 }

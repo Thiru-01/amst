@@ -57,10 +57,10 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
                 .snapshots(),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return AnimatedList(
-                    initialItemCount: snapshot.data!.docs.length,
+                return ListView.builder(
+                    itemCount: snapshot.data!.docs.length,
                     physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index, animation) {
+                    itemBuilder: (context, index) {
                       String uId = snapshot.data!.docs[index].id;
                       if (uId != user!.uid) {
                         Rx<UserModel> model = userModelFromJson(
@@ -105,7 +105,10 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
                                                 snapshot.data!.docs[0].data()
                                                     as Map<String, dynamic>);
                                         return AutoSizeText(
-                                          model.content,
+                                          model.content.contains(
+                                                  "https://firebasestorage.googleapis.com/v0/b/amst-88009.appspot.com")
+                                              ? "Photo 📷"
+                                              : model.content,
                                           style: const TextStyle(
                                             color: Colors.black12,
                                           ),

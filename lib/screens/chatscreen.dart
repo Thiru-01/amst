@@ -1,6 +1,7 @@
 import 'package:amst/components/components.dart';
 import 'package:amst/constant.dart';
 import 'package:amst/model/usermodel.dart';
+import 'package:amst/screens/fullimgsend.dart';
 import 'package:amst/service/chat.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ChatScreen extends StatefulWidget {
   final User? currentUID;
@@ -117,7 +119,20 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                                 FontAwesomeIcons.plus,
                                 color: primarySwatch,
                               ),
-                              onTap: () {},
+                              onTap: () async {
+                                var file = await ImagePicker()
+                                    .pickImage(source: ImageSource.gallery);
+                                if (file!.path != '') {
+                                  chatController.imgaePath.value = file.path;
+                                  Get.to(() => FullImgSender(
+                                        path: file,
+                                        grpId: groupId,
+                                        model: widget.model.value,
+                                        peerId: widget.model.value.id,
+                                        user: widget.currentUID,
+                                      ));
+                                }
+                              },
                             ),
                           ),
                           Flexible(
@@ -171,8 +186,13 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         controller: scrollController,
                         itemCount: snapshot.data!.docs.length,
                         itemBuilder: (context, index) {
-                          return buildItem(index, snapshot.data!.docs[index],
-                              widget.currentUID!.uid, messagelist, context);
+                          return buildItem(
+                              index,
+                              snapshot.data!.docs[index],
+                              widget.currentUID!.uid,
+                              groupId,
+                              messagelist,
+                              context);
                         },
                       );
                     } else {
