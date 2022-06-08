@@ -78,14 +78,10 @@ class MyApp extends StatelessWidget {
             }
             if (snapshot.hasData) {
               ChatController controller = Get.put(ChatController());
-              return FutureBuilder<DocumentSnapshot>(
-                future: controller.getUser(snapshot.data!.uid),
+              return StreamBuilder<DocumentSnapshot>(
+                stream: controller.getUser(snapshot.data!.uid),
                 builder: (context, snapshot2) {
-                  if (snapshot2.connectionState == ConnectionState.waiting) {
-                    return const Scaffold(
-                        body: Center(child: CircularProgressIndicator()));
-                  }
-                  if (snapshot2.hasData) {
+                  if (snapshot2.hasData && snapshot2.data!.data() != null) {
                     UserModel userModel = userModelFromJson(
                         snapshot2.data!.data() as Map<String, dynamic>);
                     if (userModel.about.isEmpty) {
@@ -97,13 +93,7 @@ class MyApp extends StatelessWidget {
                   }
                   return const Scaffold(
                     body: Center(
-                      child: AutoSizeText(
-                        "Something went wrong please \ntry again later !",
-                        maxFontSize: 22,
-                        textAlign: TextAlign.center,
-                        minFontSize: 19,
-                        style: TextStyle(color: primarySwatch),
-                      ),
+                      child: CircularProgressIndicator(),
                     ),
                   );
                 },

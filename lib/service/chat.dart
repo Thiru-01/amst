@@ -125,8 +125,8 @@ class ChatController extends GetxController {
         .update({"chattingWith": peerId});
   }
 
-  Future<DocumentSnapshot> getUser(String id) async {
-    return await firebaseFirestore.collection('users').doc(id).get();
+  Stream<DocumentSnapshot> getUser(String id) {
+    return firebaseFirestore.collection('users').doc(id).snapshots();
   }
 
   void updateAbout(String id, String about) {

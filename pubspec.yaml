@@ -53,6 +53,7 @@ dependencies:
   flutter_local_notifications: ^9.5.3+1
   http: ^0.13.4 
   dart_emoji: ^0.2.0+2
+  flutter_native_splash: ^2.2.3
   
 
 dev_dependencies:
@@ -112,3 +113,11 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_native_splash:
+  color: "#fff0e6"
+  image: assets/icon/launcher_icon.png
+  android_12:
+    image: assets/icon/launcher_icon.png
+    icon_background_color: "#fff0e6"
+     
+  web: false
