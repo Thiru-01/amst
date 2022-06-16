@@ -45,11 +45,19 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
         printInfo(info: "Resumed");
         chatController.updateChatter(
             widget.currentUID!.uid, widget.model.value.id);
+        chatController.updateStatus(widget.currentUID!.uid, "online");
+        printInfo(info: "Updating lastSeen");
+        chatController.updateLastseen(widget.currentUID!.uid,
+            DateTime.now().millisecondsSinceEpoch, "Chat-resume");
         break;
 
       case AppLifecycleState.paused:
         printInfo(info: "Pasued");
         chatController.updateChatter(widget.currentUID!.uid, "");
+        chatController.updateStatus(widget.currentUID!.uid, "offline");
+        printInfo(info: "Updating lastSeen");
+        chatController.updateLastseen(widget.currentUID!.uid,
+            DateTime.now().millisecondsSinceEpoch, "Chat-pasued");
         break;
       case AppLifecycleState.inactive:
         printInfo(info: "Inactive");
@@ -200,7 +208,7 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                         child: AutoSizeText(
                           maxFontSize: 15,
                           minFontSize: 13,
-                          "Start New Convensation !",
+                          "Start New Conversation !",
                           style: TextStyle(
                               color: primarySwatch.shade500,
                               letterSpacing: 2,

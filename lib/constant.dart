@@ -52,3 +52,28 @@ showLoaderDialog(BuildContext context) {
     },
   );
 }
+
+showLoaderSender(BuildContext context) {
+  AlertDialog alert = AlertDialog(
+    backgroundColor: primarySwatch.shade100,
+    content: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const CircularProgressIndicator(),
+        Container(
+            margin: const EdgeInsets.only(left: 7, top: 7),
+            child: const Text(
+              "Sending...",
+              style: TextStyle(color: primarySwatch),
+            )),
+      ],
+    ),
+  );
+  showDialog(
+    barrierDismissible: false,
+    context: context,
+    builder: (BuildContext context) {
+      return alert;
+    },
+  );
+}

@@ -10,6 +10,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dart_emoji/dart_emoji.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -224,7 +225,7 @@ AppBar chatAppBar(BuildContext context, UserModel model, String uID,
                   color: Colors.black, fontWeight: FontWeight.bold),
             ),
             AutoSizeText(
-              "Online",
+              model.status == "online" ? "Online" : getTimeStamp(model.onTime),
               maxFontSize: 12,
               minFontSize: 10,
               style: TextStyle(color: primarySwatch.shade400),
@@ -234,6 +235,21 @@ AppBar chatAppBar(BuildContext context, UserModel model, String uID,
       ],
     ),
   );
+}
+
+String getTimeStamp(String stamp) {
+  DateFormat dateFormat = DateFormat("EEE:d:hh:mm:ss");
+  DateFormat dateFormat2 = DateFormat("MMMM:EEE:d:hh:mm:ss");
+  DateTime dateTime =
+      Timestamp.fromMillisecondsSinceEpoch(int.parse(stamp)).toDate();
+  if (dateTime.day == DateTime.now().day) {
+    return "Today ${DateFormat("hh:mm:ss a").format(dateTime)}";
+  } else if (dateTime.day == DateTime.now().day - 1) {
+    return "Yesterday ${DateFormat("hh:mm:ss a").format(dateTime)}";
+  } else if (dateTime.month < DateTime.now().month) {
+    return dateFormat2.format(dateTime);
+  }
+  return dateFormat.format(dateTime);
 }
 
 bool isLastMessageRight(
@@ -271,11 +287,16 @@ Widget buildItem(
                             child: SizedBox(
                               width: messageModel.content.length == 2
                                   ? 100
-                                  : MediaQuery.of(context).size.width - 90,
-                              child: AutoSizeText(
-                                messageModel.content,
-                                maxFontSize: 38,
-                                minFontSize: 34,
+                                  : MediaQuery.of(context).size.width - 140,
+                              child: GestureDetector(
+                                onLongPress: () => Clipboard.setData(
+                                    ClipboardData(text: messageModel.content)),
+                                child: AutoSizeText(
+                                  messageModel.content,
+                                  textAlign: TextAlign.right,
+                                  maxFontSize: 38,
+                                  minFontSize: 34,
+                                ),
                               ),
                             ),
                           )
@@ -290,10 +311,14 @@ Widget buildItem(
                                 borderRadius: BorderRadius.circular(8)),
                             margin: const EdgeInsets.only(
                                 bottom: 5, right: 10, top: 5),
-                            child: AutoSizeText(
-                              messageModel.content,
-                              textAlign: TextAlign.left,
-                              style: const TextStyle(color: primarySwatch),
+                            child: GestureDetector(
+                              onLongPress: () => Clipboard.setData(
+                                  ClipboardData(text: messageModel.content)),
+                              child: AutoSizeText(
+                                messageModel.content,
+                                textAlign: TextAlign.left,
+                                style: const TextStyle(color: primarySwatch),
+                              ),
                             ),
                           ),
                   ],
@@ -351,11 +376,15 @@ Widget buildItem(
                             child: SizedBox(
                               width: messageModel.content.length == 2
                                   ? 100
-                                  : MediaQuery.of(context).size.width - 90,
-                              child: AutoSizeText(
-                                messageModel.content,
-                                maxFontSize: 38,
-                                minFontSize: 34,
+                                  : MediaQuery.of(context).size.width - 140,
+                              child: GestureDetector(
+                                onLongPress: () => Clipboard.setData(
+                                    ClipboardData(text: messageModel.content)),
+                                child: AutoSizeText(
+                                  messageModel.content,
+                                  maxFontSize: 38,
+                                  minFontSize: 34,
+                                ),
                               ),
                             ),
                           )
@@ -369,9 +398,13 @@ Widget buildItem(
                                 borderRadius: BorderRadius.circular(8)),
                             margin: const EdgeInsets.only(
                                 left: 10, bottom: 5, top: 5),
-                            child: AutoSizeText(
-                              messageModel.content,
-                              style: TextStyle(color: primarySwatch.shade50),
+                            child: GestureDetector(
+                              onLongPress: () => Clipboard.setData(
+                                  ClipboardData(text: messageModel.content)),
+                              child: AutoSizeText(
+                                messageModel.content,
+                                style: TextStyle(color: primarySwatch.shade50),
+                              ),
                             ),
                           ),
                   ],

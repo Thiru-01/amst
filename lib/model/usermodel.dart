@@ -18,6 +18,8 @@ class UserModel {
       required this.chattingWith,
       required this.messageToken,
       required this.lastTime,
+      required this.status,
+      required this.onTime,
       required this.about});
 
   String id;
@@ -27,6 +29,8 @@ class UserModel {
   String? chattingWith;
   String messageToken;
   String lastTime;
+  String status;
+  String onTime;
   String about;
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
@@ -34,6 +38,8 @@ class UserModel {
       nickname: json["nickname"],
       photoUrl: json["photoUrl"],
       email: json["email"],
+      status: json["status"],
+      onTime: json["onTime"],
       chattingWith: json["chattingWith"],
       messageToken: json["messageToken"],
       about: json['about'],
@@ -44,9 +50,11 @@ class UserModel {
         "nickname": nickname,
         "photoUrl": photoUrl,
         "email": email,
+        "onTime": onTime,
         "messageToken": messageToken,
         "chattingWith": chattingWith,
         "lastTime": lastTime,
-        "about": about
+        "about": about,
+        "status": status
       };
 }

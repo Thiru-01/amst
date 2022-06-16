@@ -18,22 +18,29 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
   final User? user;
   HomeScreen({super.key, this.user});
   ChatController chatController = Get.put(ChatController());
-
+  final int stamp = DateTime.now().millisecondsSinceEpoch;
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         printInfo(info: "Resumed");
+        chatController.updateStatus(user!.uid, "online");
+        printInfo(info: "Updating lastSeen");
+        chatController.updateLastseen(
+            user!.uid, DateTime.now().millisecondsSinceEpoch, "Resume");
         break;
 
       case AppLifecycleState.paused:
         printInfo(info: "Pasued");
+        chatController.updateStatus(user!.uid, "offline");
+        printInfo(info: "Updating lastSeen");
+        chatController.updateLastseen(
+            user!.uid, DateTime.now().millisecondsSinceEpoch, "Paused");
         break;
       case AppLifecycleState.inactive:
         printInfo(info: "Inactive");
         break;
       case AppLifecycleState.detached:
-        chatController.updateChatter(user!.uid, "");
         printInfo(info: "App Detached");
         break;
     }
@@ -42,6 +49,8 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    chatController.updateStatus(user!.uid, "online");
+
     final GoogleLogin googleLogin = Get.put(GoogleLogin());
     GlobalKey<ScaffoldState> scaKey = GlobalKey();
     return Scaffold(
@@ -129,11 +138,12 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
                       }
                       return const SizedBox.shrink();
                     });
-              } else {
+              } else if (snapshot.connectionState == ConnectionState.waiting) {
                 return const Center(
                   child: CircularProgressIndicator(),
                 );
               }
+              return const SizedBox();
             }),
       ),
     );

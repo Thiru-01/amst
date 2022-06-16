@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'dart:convert';
 import 'dart:io';
 
@@ -17,6 +19,7 @@ class ChatController extends GetxController {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   RxString imgaePath = ''.obs;
+  RxList chatList = [].obs;
   Future updateFirestore(
       {required String collectionPath,
       required String docs,
@@ -74,37 +77,33 @@ class ChatController extends GetxController {
     firebaseFirestore.runTransaction((transaction) async {
       transaction.set(documentReference, messageModel.toJson());
     }).whenComplete(() async {
-      try {
-        UserModel? peer;
-        QuerySnapshot rawData =
-            await FirebaseFirestore.instance.collection("users").get();
-        for (var element in rawData.docs) {
-          UserModel model =
-              userModelFromJson(element.data() as Map<String, dynamic>);
-          if (model.id == peerId) {
-            peer = model;
-          }
+      UserModel? peer;
+      QuerySnapshot rawData =
+          await FirebaseFirestore.instance.collection("users").get();
+      for (var element in rawData.docs) {
+        UserModel model =
+            userModelFromJson(element.data() as Map<String, dynamic>);
+        if (model.id == peerId) {
+          peer = model;
         }
-        printInfo(info: "peer curr: $currentId");
-        printInfo(info: "Peer: ${peer!.chattingWith}");
-        if (currentId != peer.chattingWith) {
-          await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
-              headers: <String, String>{
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Authorization': 'key=$pushMessageKey',
-              },
-              body: jsonEncode(
-                <String, dynamic>{
-                  "to": model.messageToken,
-                  'notification': <String, dynamic>{
-                    'body': '${user.displayName}: $text',
-                    'title': "AmSt",
-                  },
+      }
+      printInfo(info: "peer curr: $currentId");
+      printInfo(info: "Peer: ${peer!.chattingWith}");
+      if (currentId != peer.chattingWith) {
+        await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'key=$pushMessageKey',
+            },
+            body: jsonEncode(
+              <String, dynamic>{
+                "to": model.messageToken,
+                'notification': <String, dynamic>{
+                  'body': '${user.displayName}: $text',
+                  'title': "AmSt",
                 },
-              ));
-        }
-      } catch (e) {
-        printInfo(info: e.toString());
+              },
+            ));
       }
     });
   }
@@ -115,7 +114,7 @@ class ChatController extends GetxController {
     firebaseFirestore
         .collection('users')
         .doc(uid)
-        .update({"lastTime": DateTime.now().microsecondsSinceEpoch});
+        .update({"lastTime": DateTime.now().millisecondsSinceEpoch});
   }
 
   void updateChatter(String uID, String peerId) {
@@ -123,6 +122,18 @@ class ChatController extends GetxController {
         .collection('users')
         .doc(uID)
         .update({"chattingWith": peerId});
+  }
+
+  void updateStatus(String uID, String status) {
+    firebaseFirestore.collection('users').doc(uID).update({"status": status});
+  }
+
+  void updateLastseen(String uId, int stamp, String fromPage) {
+    printInfo(info: fromPage);
+    firebaseFirestore
+        .collection('users')
+        .doc(uId)
+        .update({"onTime": stamp.toString()});
   }
 
   Stream<DocumentSnapshot> getUser(String id) {
@@ -149,7 +160,9 @@ class ChatController extends GetxController {
       required String grpId,
       required String peerId,
       required String path,
-      required UserModel model}) async {
+      required UserModel model,
+      required BuildContext context}) async {
+    showLoaderSender(context);
     var task = await firebaseStorage.ref("$grpId/").putFile(File(path));
     String pathS = await task.ref.getDownloadURL();
     String timeStamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -169,36 +182,34 @@ class ChatController extends GetxController {
     firebaseFirestore.runTransaction((transaction) async {
       transaction.set(documentReference, messageModel.toJson());
     }).whenComplete(() async {
-      try {
-        UserModel? peer;
-        QuerySnapshot rawData =
-            await FirebaseFirestore.instance.collection("users").get();
-        for (var element in rawData.docs) {
-          UserModel model =
-              userModelFromJson(element.data() as Map<String, dynamic>);
-          if (model.id == peerId) {
-            peer = model;
-          }
+      UserModel? peer;
+      QuerySnapshot rawData =
+          await FirebaseFirestore.instance.collection("users").get();
+      for (var element in rawData.docs) {
+        UserModel model =
+            userModelFromJson(element.data() as Map<String, dynamic>);
+        if (model.id == peerId) {
+          peer = model;
         }
-        if (user.uid != peer!.chattingWith) {
-          await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
-              headers: <String, String>{
-                'Content-Type': 'application/json; charset=UTF-8',
-                'Authorization': 'key=$pushMessageKey',
-              },
-              body: jsonEncode(
-                <String, dynamic>{
-                  "to": model.messageToken,
-                  'notification': <String, dynamic>{
-                    'body': '${user.displayName}: Photo 📷',
-                    'title': "AmSt",
-                  },
+      }
+      if (user.uid != peer!.chattingWith) {
+        await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+            headers: <String, String>{
+              'Content-Type': 'application/json; charset=UTF-8',
+              'Authorization': 'key=$pushMessageKey',
+            },
+            body: jsonEncode(
+              <String, dynamic>{
+                "to": model.messageToken,
+                'notification': <String, dynamic>{
+                  'body': '${user.displayName}: Photo 📷',
+                  'title': "AmSt",
                 },
-              ));
-        }
-      } catch (e) {
-        printInfo(info: e.toString());
+              },
+            ));
       }
     });
+    Navigator.pop(context);
+    Get.back();
   }
 }

@@ -40,12 +40,15 @@ class FullImgSender extends StatelessWidget {
         ],
       ),
       floatingActionButton: FloatingActionButton(
-          onPressed: () => chatController.sendImage(
-              user: user,
-              grpId: grpId,
-              peerId: peerId,
-              path: path.path,
-              model: model),
+          onPressed: () {
+            chatController.sendImage(
+                user: user,
+                grpId: grpId,
+                peerId: peerId,
+                path: path.path,
+                context: context,
+                model: model);
+          },
           child: const Icon(
             Icons.send,
             color: Colors.white,

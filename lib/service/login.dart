@@ -40,7 +40,9 @@ class GoogleLogin {
           "messageToken": messToken!,
           "chattingWith": '',
           "lastTime": '0',
-          'about': ''
+          'about': '',
+          'onTime': DateTime.now().millisecondsSinceEpoch.toString(),
+          'status': 'online'
         });
       }
     }
