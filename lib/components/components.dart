@@ -156,6 +156,7 @@ AppBar homeAppBar(GlobalKey<ScaffoldState> scaKey, User? user) {
                 return CachedNetworkImage(
                   imageUrl: (snapshot.data!.data()
                       as Map<String, dynamic>)["photoUrl"],
+                  cacheKey: "profile",
                   imageBuilder: ((context, imageProvider) {
                     return Padding(
                       padding: const EdgeInsets.all(12.0),
@@ -171,8 +172,7 @@ AppBar homeAppBar(GlobalKey<ScaffoldState> scaKey, User? user) {
                   }),
                 );
               }
-              return const Center(
-                  child: FittedBox(child: CircularProgressIndicator()));
+              return const SizedBox.shrink();
             })),
     title: Text(
       "Message".toUpperCase(),
@@ -181,8 +181,12 @@ AppBar homeAppBar(GlobalKey<ScaffoldState> scaKey, User? user) {
   );
 }
 
-AppBar chatAppBar(BuildContext context, UserModel model, String uID,
-    ChatController controller) {
+AppBar chatAppBar(
+  BuildContext context,
+  UserModel model,
+  String uID,
+  ChatController controller,
+) {
   return AppBar(
     backgroundColor: primarySwatch.shade50,
     elevation: 0,
@@ -224,11 +228,28 @@ AppBar chatAppBar(BuildContext context, UserModel model, String uID,
               style: const TextStyle(
                   color: Colors.black, fontWeight: FontWeight.bold),
             ),
-            AutoSizeText(
-              model.status == "online" ? "Online" : getTimeStamp(model.onTime),
-              maxFontSize: 12,
-              minFontSize: 10,
-              style: TextStyle(color: primarySwatch.shade400),
+            StreamBuilder<DocumentSnapshot<UserModel>>(
+              stream: controller.firebaseFirestore
+                  .collection('users')
+                  .doc(model.id)
+                  .withConverter<UserModel>(
+                      fromFirestore: (snapshot, options) =>
+                          userModelFromJson(snapshot.data()!),
+                      toFirestore: (value, options) => value.toJson())
+                  .snapshots(),
+              builder: (context, snap) {
+                if (snap.hasData && snap.data != null) {
+                  return AutoSizeText(
+                    snap.data!.data()!.onTime == 'online'
+                        ? "Online"
+                        : getTimeStamp(snap.data!.data()!.onTime),
+                    maxFontSize: 12,
+                    minFontSize: 10,
+                    style: TextStyle(color: primarySwatch.shade400),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
             )
           ],
         )
@@ -243,13 +264,13 @@ String getTimeStamp(String stamp) {
   DateTime dateTime =
       Timestamp.fromMillisecondsSinceEpoch(int.parse(stamp)).toDate();
   if (dateTime.day == DateTime.now().day) {
-    return "Today ${DateFormat("hh:mm:ss a").format(dateTime)}";
+    return "Last seen today ${DateFormat("hh:mm:ss a").format(dateTime)}";
   } else if (dateTime.day == DateTime.now().day - 1) {
-    return "Yesterday ${DateFormat("hh:mm:ss a").format(dateTime)}";
+    return "Last seen yesterday ${DateFormat("hh:mm:ss a").format(dateTime)}";
   } else if (dateTime.month < DateTime.now().month) {
-    return dateFormat2.format(dateTime);
+    return "Last seen ${dateFormat2.format(dateTime)}";
   }
-  return dateFormat.format(dateTime);
+  return "Last seen ${dateFormat.format(dateTime)}";
 }
 
 bool isLastMessageRight(

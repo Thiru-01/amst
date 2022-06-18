@@ -47,6 +47,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ChatController controller = Get.put(ChatController());
     return GetMaterialApp(
       title: 'AmSt',
       debugShowCheckedModeBanner: false,
@@ -77,7 +78,6 @@ class MyApp extends StatelessWidget {
               return SingUpScreen();
             }
             if (snapshot.hasData) {
-              ChatController controller = Get.put(ChatController());
               return StreamBuilder<DocumentSnapshot>(
                 stream: controller.getUser(snapshot.data!.uid),
                 builder: (context, snapshot2) {
@@ -87,6 +87,7 @@ class MyApp extends StatelessWidget {
                     if (userModel.about.isEmpty) {
                       return InfoPage(user: snapshot.data);
                     }
+
                     return HomeScreen(
                       user: snapshot.data,
                     );

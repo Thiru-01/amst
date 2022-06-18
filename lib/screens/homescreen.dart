@@ -14,34 +14,47 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
-class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
+class HomeScreen extends StatefulWidget {
   final User? user;
-  HomeScreen({super.key, this.user});
-  ChatController chatController = Get.put(ChatController());
-  final int stamp = DateTime.now().millisecondsSinceEpoch;
+  const HomeScreen({super.key, this.user});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen>
+    with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
+  ChatController chatController = Get.find();
+  @override
+  void initState() {
+    chatController.updateStatus(widget.user!.uid, "online");
+    WidgetsBinding.instance.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        printInfo(info: "Resumed");
-        chatController.updateStatus(user!.uid, "online");
-        printInfo(info: "Updating lastSeen");
-        chatController.updateLastseen(
-            user!.uid, DateTime.now().millisecondsSinceEpoch, "Resume");
+        printInfo(info: "Home - resumed");
+        chatController.updateStatus(widget.user!.uid, "online");
+        chatController.updateLastseen(widget.user!.uid);
         break;
 
       case AppLifecycleState.paused:
-        printInfo(info: "Pasued");
-        chatController.updateStatus(user!.uid, "offline");
-        printInfo(info: "Updating lastSeen");
-        chatController.updateLastseen(
-            user!.uid, DateTime.now().millisecondsSinceEpoch, "Paused");
+        printInfo(info: "Home - paused");
+        chatController.updateStatus(widget.user!.uid, "offline");
+        chatController.updateLastseen(widget.user!.uid);
         break;
       case AppLifecycleState.inactive:
-        printInfo(info: "Inactive");
         break;
       case AppLifecycleState.detached:
-        printInfo(info: "App Detached");
         break;
     }
     super.didChangeAppLifecycleState(state);
@@ -49,14 +62,13 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    chatController.updateStatus(user!.uid, "online");
-
+    super.build(context);
     final GoogleLogin googleLogin = Get.put(GoogleLogin());
     GlobalKey<ScaffoldState> scaKey = GlobalKey();
     return Scaffold(
       key: scaKey,
-      appBar: homeAppBar(scaKey, user),
-      drawer: homeDrawer(googleLogin, user),
+      appBar: homeAppBar(scaKey, widget.user),
+      drawer: homeDrawer(googleLogin, widget.user),
       body: SizedBox(
         height: height(context),
         child: StreamBuilder<QuerySnapshot>(
@@ -71,22 +83,23 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
                     physics: const BouncingScrollPhysics(),
                     itemBuilder: (context, index) {
                       String uId = snapshot.data!.docs[index].id;
-                      if (uId != user!.uid) {
+                      if (uId != widget.user!.uid) {
                         Rx<UserModel> model = userModelFromJson(
                                 snapshot.data!.docs[index].data()
                                     as Map<String, dynamic>)
                             .obs;
 
-                        String grpId =
-                            chatController.getGrpId(user!.uid, model.value.id);
+                        String grpId = chatController.getGrpId(
+                            widget.user!.uid, model.value.id);
                         return Column(
                           children: [
                             ListTile(
                               onTap: () {
                                 chatController.updateChatter(
-                                    user!.uid, model.value.id);
-                                Get.to(() =>
-                                    ChatScreen(currentUID: user, model: model));
+                                    widget.user!.uid, model.value.id);
+
+                                Get.to(() => ChatScreen(
+                                    currentUID: widget.user, model: model));
                               },
                               leading: SizedBox(
                                 height: 50,
@@ -148,4 +161,7 @@ class HomeScreen extends StatelessWidget with WidgetsBindingObserver {
       ),
     );
   }
+
+  @override
+  bool get wantKeepAlive => true;
 }

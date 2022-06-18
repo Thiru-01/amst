@@ -41,7 +41,7 @@ class GoogleLogin {
           "chattingWith": '',
           "lastTime": '0',
           'about': '',
-          'onTime': DateTime.now().millisecondsSinceEpoch.toString(),
+          'time': DateTime.now().millisecondsSinceEpoch.toString(),
           'status': 'online'
         });
       }

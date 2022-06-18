@@ -39,41 +39,31 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   }
 
   @override
+  void dispose() {
+    chatController.updateChatter(widget.currentUID!.uid, "");
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
         printInfo(info: "Resumed");
         chatController.updateChatter(
             widget.currentUID!.uid, widget.model.value.id);
-        chatController.updateStatus(widget.currentUID!.uid, "online");
-        printInfo(info: "Updating lastSeen");
-        chatController.updateLastseen(widget.currentUID!.uid,
-            DateTime.now().millisecondsSinceEpoch, "Chat-resume");
         break;
 
       case AppLifecycleState.paused:
-        printInfo(info: "Pasued");
+        printInfo(info: "paused");
         chatController.updateChatter(widget.currentUID!.uid, "");
-        chatController.updateStatus(widget.currentUID!.uid, "offline");
-        printInfo(info: "Updating lastSeen");
-        chatController.updateLastseen(widget.currentUID!.uid,
-            DateTime.now().millisecondsSinceEpoch, "Chat-pasued");
         break;
       case AppLifecycleState.inactive:
-        printInfo(info: "Inactive");
         break;
       case AppLifecycleState.detached:
-        printInfo(info: "App Detached");
         break;
     }
     super.didChangeAppLifecycleState(state);
-  }
-
-  @override
-  void dispose() {
-    WidgetsBinding.instance.addObserver(this);
-    super.dispose();
-    chatController.updateChatter(widget.currentUID!.uid, "");
   }
 
   _scrollListener() {
@@ -226,4 +216,6 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
                 child: CircularProgressIndicator(),
               ));
   }
+
+  willPop() {}
 }

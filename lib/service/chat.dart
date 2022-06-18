@@ -13,13 +13,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:get/get.dart';
 
-willPop() {}
-
 class ChatController extends GetxController {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   RxString imgaePath = ''.obs;
+  RxString lastSeen = ''.obs;
   RxList chatList = [].obs;
+  int count = 0;
   Future updateFirestore(
       {required String collectionPath,
       required String docs,
@@ -77,6 +77,7 @@ class ChatController extends GetxController {
     firebaseFirestore.runTransaction((transaction) async {
       transaction.set(documentReference, messageModel.toJson());
     }).whenComplete(() async {
+      printInfo(info: "checkcount");
       UserModel? peer;
       QuerySnapshot rawData =
           await FirebaseFirestore.instance.collection("users").get();
@@ -87,9 +88,8 @@ class ChatController extends GetxController {
           peer = model;
         }
       }
-      printInfo(info: "peer curr: $currentId");
-      printInfo(info: "Peer: ${peer!.chattingWith}");
-      if (currentId != peer.chattingWith) {
+
+      if (currentId != peer!.chattingWith) {
         await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
             headers: <String, String>{
               'Content-Type': 'application/json; charset=UTF-8',
@@ -108,9 +108,7 @@ class ChatController extends GetxController {
     });
   }
 
-  void updateTimeStamp(
-    String uid,
-  ) {
+  void updateTimeStamp(String uid) {
     firebaseFirestore
         .collection('users')
         .doc(uid)
@@ -128,12 +126,14 @@ class ChatController extends GetxController {
     firebaseFirestore.collection('users').doc(uID).update({"status": status});
   }
 
-  void updateLastseen(String uId, int stamp, String fromPage) {
-    printInfo(info: fromPage);
+  void updateLastseen(String uId) {
+    int stamp = DateTime.now().millisecondsSinceEpoch;
     firebaseFirestore
         .collection('users')
         .doc(uId)
-        .update({"onTime": stamp.toString()});
+        .update({"time": stamp.toString()});
+    count++;
+    printInfo(info: count.toString());
   }
 
   Stream<DocumentSnapshot> getUser(String id) {
