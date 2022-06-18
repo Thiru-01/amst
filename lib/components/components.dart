@@ -240,7 +240,7 @@ AppBar chatAppBar(
               builder: (context, snap) {
                 if (snap.hasData && snap.data != null) {
                   return AutoSizeText(
-                    snap.data!.data()!.onTime == 'online'
+                    snap.data!.data()!.status == 'online'
                         ? "Online"
                         : getTimeStamp(snap.data!.data()!.onTime),
                     maxFontSize: 12,

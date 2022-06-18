@@ -42,13 +42,11 @@ class _HomeScreenState extends State<HomeScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        printInfo(info: "Home - resumed");
         chatController.updateStatus(widget.user!.uid, "online");
         chatController.updateLastseen(widget.user!.uid);
         break;
 
       case AppLifecycleState.paused:
-        printInfo(info: "Home - paused");
         chatController.updateStatus(widget.user!.uid, "offline");
         chatController.updateLastseen(widget.user!.uid);
         break;

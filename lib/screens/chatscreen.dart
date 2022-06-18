@@ -49,13 +49,11 @@ class _ChatScreenState extends State<ChatScreen> with WidgetsBindingObserver {
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        printInfo(info: "Resumed");
         chatController.updateChatter(
             widget.currentUID!.uid, widget.model.value.id);
         break;
 
       case AppLifecycleState.paused:
-        printInfo(info: "paused");
         chatController.updateChatter(widget.currentUID!.uid, "");
         break;
       case AppLifecycleState.inactive:
