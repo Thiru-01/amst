@@ -1,6 +1,5 @@
 # AmSt 
 <img src="screenshots/icon.png" width="70"/>
-<br></br>
 
 *A messaging application which uses Firebase for backend and Getx for statemanagement having minimalstic user interface*
 
