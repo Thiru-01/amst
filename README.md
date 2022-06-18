@@ -1,10 +1,14 @@
-# AmSt
+# AmSt 
+<img src="screenshots/icon.png" width="70"/>
+<br></br>
+
 *A messaging application which uses Firebase for backend and Getx for statemanagement having minimalstic user interface*
 
 ## Features
 1. Chatting with Peer
 2. Able to send image
-3. Notifications 
+3. Notifications
+4. Last seen 
 
 ### Packages Used:
 | Plugins                     | Versions |
@@ -27,3 +31,26 @@
 | http                        | 0.13.4   |
 | dart_emoji                  | 0.2.0+2  |
 | flutter_native_splash       | 2.2.3    |
+#### SING UP SCREEN
+![alt](screenshots/1.jpg)
+
+#### ABOUT SCREEN
+![alt](screenshots/2.jpg)
+
+#### HOME SCREEN
+![alt](screenshots/3.jpg)
+
+#### DRAWER
+![alt](screenshots/4.jpg)
+
+#### CHAT SCREEN
+![alt](screenshots/5.jpg)
+
+#### NOTIFICATION
+![alt](screenshots/6.jpg)
+
+#### OTHER FUNCTIONALITY
+![alt](screenshots/8.jpg)
+
+### LINK
+[App link for download](https://github.com/Thiru-01/amst/raw/main/out/AmSt.apk)

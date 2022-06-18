@@ -18,6 +18,7 @@ class ChatController extends GetxController {
   FirebaseStorage firebaseStorage = FirebaseStorage.instance;
   RxString imgaePath = ''.obs;
   RxString lastSeen = ''.obs;
+  RxBool pause = false.obs;
   RxList chatList = [].obs;
   int count = 0;
   Future updateFirestore(

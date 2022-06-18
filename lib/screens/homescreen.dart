@@ -1,4 +1,7 @@
-// ignore_for_file: must_be_immutable
+// ignore_for_file: must_be_immutable, void_checks
+
+import 'dart:async';
+import 'dart:math';
 
 import 'package:amst/components/components.dart';
 import 'package:amst/constant.dart';
@@ -25,10 +28,12 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen>
     with WidgetsBindingObserver, AutomaticKeepAliveClientMixin {
   ChatController chatController = Get.find();
+
   @override
   void initState() {
     chatController.updateStatus(widget.user!.uid, "online");
     WidgetsBinding.instance.addObserver(this);
+
     super.initState();
   }
 
@@ -105,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen>
                                 child: ClipOval(
                                   child: CachedNetworkImage(
                                     imageUrl: model.value.photoUrl,
+                                    fit: BoxFit.cover,
                                     fadeInDuration: const Duration(),
                                   ),
                                 ),

@@ -91,6 +91,8 @@ class MyApp extends StatelessWidget {
                     return HomeScreen(
                       user: snapshot.data,
                     );
+                  } else if (snapshot2.data?.data() == null) {
+                    return SingUpScreen();
                   }
                   return const Scaffold(
                     body: Center(

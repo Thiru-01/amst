@@ -82,22 +82,36 @@ Drawer homeDrawer(GoogleLogin googleLogin, User? user) {
                       ),
                     ),
                   ),
-                  ListTile(
-                      title: const AutoSizeText(
-                        "About",
-                        minFontSize: 18,
-                        maxFontSize: 20,
-                        style: TextStyle(color: Colors.black),
-                      ),
-                      trailing: AutoSizeText(
-                        userModel.about,
-                        minFontSize: 14,
-                        maxFontSize: 16,
-                        style: TextStyle(
-                          color: primarySwatch.shade700,
-                          fontWeight: FontWeight.bold,
+                  Padding(
+                    padding: const EdgeInsets.all(14.5),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const AutoSizeText(
+                          "About",
+                          minFontSize: 18,
+                          maxFontSize: 20,
+                          style: TextStyle(color: Colors.black),
                         ),
-                      )),
+                        const SizedBox(
+                          width: 8,
+                        ),
+                        Expanded(
+                          child: AutoSizeText(
+                            userModel.about,
+                            textAlign: TextAlign.right,
+                            minFontSize: 14,
+                            maxFontSize: 16,
+                            style: TextStyle(
+                              color: primarySwatch.shade700,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                  ),
                   Expanded(
                       child: Padding(
                     padding: const EdgeInsets.all(8.0),
